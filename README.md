@@ -59,8 +59,8 @@ The page currently loads React and Babel from CDN scripts, so an internet connec
 ## Image Sources
 
 - Product cards use the supplied local JPEG photographs.
-- Category tiles use royalty-free Unsplash image URLs.
-- The category visuals are decorative references; local uploaded product images remain the source of truth for the product cards.
+- Category tiles use the supplied local product photographs mapped to their matching product names.
+- The Lakshmi Ji category currently uses the supplied devotional idol photograph because a Lakshmi Ji-specific photograph was not available in the uploaded assets.
 
 ## Favourites
 

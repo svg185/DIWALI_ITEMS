@@ -1,4 +1,4 @@
-const { useMemo, useState } = React;
+const { useEffect, useMemo, useState } = React;
 
 const image = (name) => name;
 const products = [
@@ -13,14 +13,26 @@ const products = [
 ];
 
 const categories = [
-  ["All Products", "✦", "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=900&q=80"],
-  ["Traditional Mitti Ke Diye", "◒", "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=900&q=80"],
-  ["Colorful Decorative Diyas", "◉", "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=900&q=80"],
-  ["Diya Sets & Combos", "▣", "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=900&q=80"],
-  ["Decorative Kalash & Festive Pots", "♢", "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=900&q=80"],
-  ["Lakshmi Ji Idols", "ॐ", "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=900&q=80"],
-  ["Festive Decoration", "✺", "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=900&q=80"]
+  ["All Products", "✦", "WhatsApp Image 2026-10-29 at 10.59.19 AM (1).jpeg"],
+  ["Traditional Mitti Ke Diye", "◒", "WhatsApp Image 2026-10-29 at 10.59.19 AM.jpeg"],
+  ["Colorful Decorative Diyas", "◉", "WhatsApp Image 2026-10-29 at 10.59.19 AM (1).jpeg"],
+  ["Diya Sets & Combos", "▣", "WhatsApp Image 2026-10-29 at 10.59.20 AM.jpeg"],
+  ["Decorative Kalash & Festive Pots", "♢", "WhatsApp Image 2026-10-29 at 10.59.22 AM.jpeg"],
+  ["Lakshmi Ji Idols", "ॐ", "WhatsApp Image 2026-10-29 at 10.59.18 AM.jpeg"],
+  ["Festive Decoration", "✺", "WhatsApp Image 2026-10-29 at 10.59.18 AM (1).jpeg"]
 ];
+
+const galleryImages = {
+  1: ["WhatsApp Image 2026-10-29 at 10.59.19 AM (1).jpeg", "WhatsApp Image 2026-10-29 at 10.59.20 AM (2).jpeg", "WhatsApp Image 2026-10-29 at 10.59.19 AM (3).jpeg"],
+  2: ["WhatsApp Image 2026-10-29 at 10.59.19 AM.jpeg", "WhatsApp Image 2026-10-29 at 10.59.20 AM (1).jpeg", "WhatsApp Image 2026-10-29 at 10.59.19 AM (2).jpeg"],
+  3: ["WhatsApp Image 2026-10-29 at 10.59.20 AM.jpeg", "WhatsApp Image 2026-10-29 at 10.59.20 AM (2).jpeg", "WhatsApp Image 2026-10-29 at 10.59.19 AM (1).jpeg"],
+  4: ["WhatsApp Image 2026-10-29 at 10.59.22 AM.jpeg", "WhatsApp Image 2026-10-29 at 10.59.22 AM (1).jpeg", "WhatsApp Image 2026-10-29 at 10.59.20 AM.jpeg"],
+  5: ["WhatsApp Image 2026-10-29 at 10.59.18 AM.jpeg", "WhatsApp Image 2026-10-29 at 10.59.18 AM (1).jpeg"],
+  6: ["WhatsApp Image 2026-10-29 at 10.59.18 AM (1).jpeg", "WhatsApp Image 2026-10-29 at 10.59.19 AM (1).jpeg", "WhatsApp Image 2026-10-29 at 10.59.18 AM.jpeg"],
+  7: ["WhatsApp Image 2026-10-29 at 10.59.20 AM (1).jpeg", "WhatsApp Image 2026-10-29 at 10.59.19 AM.jpeg", "WhatsApp Image 2026-10-29 at 10.59.19 AM (2).jpeg"],
+  8: ["WhatsApp Image 2026-10-29 at 10.59.19 AM (3).jpeg", "WhatsApp Image 2026-10-29 at 10.59.20 AM.jpeg", "WhatsApp Image 2026-10-29 at 10.59.20 AM (2).jpeg"]
+};
+const getGallery = (product) => galleryImages[product.id] || [product.image];
 
 function ProductCard({ product, isFavourite, onToggle, onDetails }) {
   return <article className="product-card">
@@ -41,10 +53,17 @@ function ProductCard({ product, isFavourite, onToggle, onDetails }) {
   </article>;
 }
 
-function DetailModal({ product, isFavourite, onToggle, onClose, onPrevious, onNext }) {
+function DetailModal({ product, isFavourite, onToggle, onClose, onPrevious, onNext, photoIndex, onPhotoChange }) {
+  const gallery = getGallery(product);
+  const [isRotating, setIsRotating] = useState(false);
+  useEffect(() => {
+    if (!isRotating) return undefined;
+    const timer = window.setInterval(() => onPhotoChange((photoIndex + 1) % gallery.length), 2200);
+    return () => window.clearInterval(timer);
+  }, [isRotating, photoIndex, gallery.length, onPhotoChange]);
   return <div className="modal-backdrop" onClick={onClose}><div className="modal" onClick={(event) => event.stopPropagation()}>
     <button className="close" onClick={onClose} aria-label="Close product details">×</button>
-    <div className="detail"><div className="detail-image"><img src={image(product.image)} alt={`${product.name} - ${product.category}`} /></div><div className="detail-copy">
+    <div className="detail"><div><div className={`detail-image ${isRotating ? "rotating" : ""}`}><img key={gallery[photoIndex]} src={image(gallery[photoIndex])} alt={`${product.name}, view ${photoIndex + 1} - ${product.category}`} /><span className="angle-label">{isRotating ? "360° preview" : `View ${photoIndex + 1} of ${gallery.length}`}</span></div><div className="gallery-controls">{gallery.map((photo, index) => <button key={photo} className={index === photoIndex ? "active" : ""} onClick={() => { setIsRotating(false); onPhotoChange(index); }} aria-label={`Show product view ${index + 1}`}><img src={image(photo)} alt="" /></button>)}</div><button className={`rotate-toggle ${isRotating ? "active" : ""}`} onClick={() => setIsRotating(!isRotating)}>{isRotating ? "Pause 360° preview" : "▶ Start 360° preview"}</button></div><div className="detail-copy">
       <span className="product-category">{product.category}</span><h2>{product.name}</h2><p>{product.description}</p>
       <button className={`btn ${isFavourite ? "btn-saved" : "btn-primary"}`} onClick={() => onToggle(product)}>{isFavourite ? "♥ Saved to favourites" : "♡ Add to favourites"}</button>
       <div className="detail-nav"><button onClick={onPrevious} aria-label="Previous product">← Previous</button><button onClick={onNext} aria-label="Next product">Next →</button></div>
@@ -60,6 +79,7 @@ function App() {
     try { return JSON.parse(localStorage.getItem("daksh-diwali-favourites") || "[]"); } catch { return []; }
   });
   const [modalIndex, setModalIndex] = useState(null);
+  const [photoIndex, setPhotoIndex] = useState(0);
   const [toast, setToast] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -78,7 +98,7 @@ function App() {
     showToast(alreadySaved ? "Removed from your favourites." : "Added to your favourites!");
   };
   const scrollTo = (id) => { setMenuOpen(false); document.getElementById(id).scrollIntoView({ behavior: "smooth" }); };
-  const openDetails = (product) => setModalIndex(products.findIndex(item => item.id === product.id));
+  const openDetails = (product) => { setModalIndex(products.findIndex(item => item.id === product.id)); setPhotoIndex(0); };
   const moveDetail = (step) => setModalIndex((modalIndex + step + products.length) % products.length);
 
   return <div className="page-shell">
@@ -92,7 +112,7 @@ function App() {
     <section className="section categories" id="categories"><div className="section-heading"><div><span className="eyebrow">Curated by feeling</span><h2>Find your festive glow</h2></div><p>Explore handcrafted colour, classic terracotta and meaningful festive details for every corner of your home.</p></div><div className="category-grid">{categories.map(([name, symbol, categoryImage]) => <button key={name} className={`category ${category === name && !favouritesOnly ? "active" : ""}`} onClick={() => { setCategory(name); setFavouritesOnly(false); scrollTo("collection"); }}><span className="category-image"><img src={categoryImage} alt="" loading="lazy" /></span><span className="category-symbol">{symbol}</span><span>{name}</span></button>)}</div></section>
     <section className="section products" id="collection"><div className="section-heading"><div><span className="eyebrow">{favouritesOnly ? "Your saved glow" : "The collection"}</span><h2>{favouritesOnly ? "My Favourites" : "Light up your home"}</h2></div><p>{favouritesOnly ? "Your favourite festive pieces, kept close for whenever inspiration strikes." : "Real pieces from our festive shelf, photographed in-store and described with care."}</p></div><div className="toolbar"><label className="search-box"><span>⌕</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search the collection..." aria-label="Search the collection" /></label>{favouritesOnly && <button className="clear-favourites" onClick={() => setFavouritesOnly(false)}>View all products</button>}</div><div className="product-grid">{visibleProducts.length ? visibleProducts.map(product => <ProductCard key={product.id} product={product} isFavourite={favourites.includes(product.id)} onToggle={toggleFavourite} onDetails={openDetails} />) : <div className="empty-state"><span>♡</span><h3>No saved pieces yet</h3><p>Tap the heart on a product to create your festive favourites.</p><button className="btn btn-primary" onClick={() => setFavouritesOnly(false)}>Explore the collection</button></div>}</div></section>
     <footer className="footer"><div className="footer-grid"><div><h3>DAKSH STUDY & STATIONERY HUB</h3><p>Celebrating the Festival of Lights with colour, craft and a little more warmth in every corner.</p></div><div><h3>Quick navigation</h3><div className="footer-links"><button onClick={() => scrollTo("home")}>Home</button><button onClick={() => scrollTo("collection")}>Diwali Collection</button><button onClick={() => scrollTo("categories")}>Categories</button><button onClick={() => { setFavouritesOnly(true); scrollTo("collection"); }}>My Favourites</button></div></div><div><h3>Festive note</h3><p>May your home glow with joy, your days with togetherness, and your Diwali with beautiful memories.</p></div></div><div className="footer-bottom">© 2026 DAKSH STUDY & STATIONERY HUB · Har Diya Mein Khushi, Har Roshni Mein Apnapan</div></footer>
-    {modalIndex !== null && <DetailModal product={products[modalIndex]} isFavourite={favourites.includes(products[modalIndex].id)} onToggle={toggleFavourite} onClose={() => setModalIndex(null)} onPrevious={() => moveDetail(-1)} onNext={() => moveDetail(1)} />}
+    {modalIndex !== null && <DetailModal product={products[modalIndex]} isFavourite={favourites.includes(products[modalIndex].id)} onToggle={toggleFavourite} onClose={() => setModalIndex(null)} onPrevious={() => { moveDetail(-1); setPhotoIndex(0); }} onNext={() => { moveDetail(1); setPhotoIndex(0); }} photoIndex={photoIndex} onPhotoChange={setPhotoIndex} />}
     {toast && <div className="toast" role="status">{toast}</div>}
   </div>;
 }
